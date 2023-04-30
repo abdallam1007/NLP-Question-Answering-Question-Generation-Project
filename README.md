@@ -25,4 +25,7 @@ python3 ask.py data/set_i/article n
 ### Running the QA component
 python3 answer.py data/set_i/article questions/questions.txt
 
+
+## Aditional Notes and issues with installing requirements
+
 Website for downloading nltk: https://stackoverflow.com/questions/41691327/ssl-sslerror-ssl-certificate-verify-failed-certificate-verify-failed-ssl-c/41692664#41692664
