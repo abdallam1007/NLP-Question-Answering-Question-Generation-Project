@@ -18,6 +18,16 @@ source env/bin/activate
 6. Download all requirements
 python3 -m pip install -r requirements.txt
 
+7. Download the Stanford CoreNLP Library files
+To download Stanford CoreNLP version 4.5.4, you can follow these steps:
+
+7.1 Go to the Stanford CoreNLP downloads page: https://stanfordnlp.github.io/CoreNLP/download.html
+
+7.2 Under the "Previous Versions" section, click on the link for version 4.5.4.
+
+7.3 Scroll down to the "Downloads" section and download the file "stanford-corenlp-4.5.4.zip".
+
+7.4 Extract the contents of the zip file to a directory of your choice.
 ## How to run the project
 
 ### Running the QG component
