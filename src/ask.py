@@ -4,6 +4,7 @@ from pattern.en import *
 from nltk.parse import stanford
 from nltk.corpus import wordnet as wn
 from nltk import pos_tag, word_tokenize, sent_tokenize
+from pronoun import most_freq_pronoun
 
 # Define the path to the Stanford Parser jar file
 stanford_parser_jar = 'libs/stanford-corenlp-4.5.4/stanford-corenlp-4.5.4.jar'
@@ -93,6 +94,12 @@ def is_person(pos_tags):
                 return True
     return False
 
+def is_personal_pronoun(tok, label):
+    if label != "PRP":
+        return False
+    if tok.lower() in ["he", "she", "they"]:
+        return True
+    return False
 # returns the first noun that occurs after the index provided
 def find_next_noun(pos_tags, ind):
     for i in range(ind, len(pos_tags)):
@@ -266,7 +273,7 @@ def make_what_question(np_str, vp_str, verb):
 
     return None
 
-def make_questions(t):
+def make_questions(t, prn, title):
     questions = {"bin": [], "who": [], "where": [], "when": [], "what": []}
     # restrict the type of sentences we work on to (NP, VP, .) sentences =
     # simple predicate sentences
@@ -315,7 +322,7 @@ def make_questions(t):
 
     added = 0
     np_pos = pos_tag_a_tree(np)
-    if np_pos[0][1] == "PRP" or is_person(np_pos):
+    if is_personal_pronoun(np_pos[0][0], np_pos[0][1]) or is_person(np_pos):
         q = make_who_question(vp_str, verb)
         if q:
             questions["who"].append(q)
@@ -334,6 +341,22 @@ def make_questions(t):
         q = make_what_question(np_str, vp_str, verb)
         if q:
             questions["what"].append(q)
+
+    # go through each type of question
+    for key in questions:
+        qs = questions[key]
+        # go through all questions of that type
+        for i in range(len(qs)):
+            toks = qs[i].split(" ")
+            # check all the words in the words in the question
+            for j in range(len(toks)):
+                # if we find the pronoun used for the subj of the article
+                # we replace it with the title
+                if toks[j].lower() == prn:
+                    toks[j] = title.strip()
+
+            qs[i] = " ".join(toks)
+        questions[key] = qs
 
     return questions
 
@@ -366,6 +389,9 @@ def questionGeneration(article, n):
     percentages = {"bin": 0.3, "who": 0.2, "where": 0.2, "when": 0.2, "what": 0.1}
     questions = {"bin": [], "who": [], "where": [], "when": [], "what": []}
 
+    # Find the pronoun that refers to the subject of the article
+    (props, prn, title) = most_freq_pronoun(article)
+
     # Read the file
     with open(article, 'r') as file:
         article = file.read()
@@ -377,7 +403,7 @@ def questionGeneration(article, n):
     for sentence in sentences:
         # Parse the sentence and get the parse tree
         for tree in parser.raw_parse(sentence):
-            new_questions = make_questions(tree)
+            new_questions = make_questions(tree, prn, title)
             update_questions(questions, new_questions)
 
     chosen_questions = choose_questions(questions, n, percentages)
